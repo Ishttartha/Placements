@@ -1,0 +1,50 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+# Load your dataset containing macroeconomic indicators, yield curve data, and historical trends
+# This dataset should have columns like GDP growth, inflation rate, yield curve data points, etc.
+# Each row corresponds to a specific time period (e.g., quarter, year).
+
+# Assuming the dataset is loaded into a DataFrame called 'data'
+# Columns: 'GDP_growth', 'Inflation', 'Yield_1Y', 'Yield_5Y', 'Yield_10Y', 'Interest_Rate'
+
+# Preprocessing: Handling missing values, scaling, etc. (not shown here)
+
+# Define features and target variable
+features = ['GDP_growth', 'Inflation', 'Yield_1Y', 'Yield_5Y', 'Yield_10Y']
+target = 'Interest_Rate'
+
+X = data[features]
+y = data[target]
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize and train a linear regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model using Mean Squared Error
+mse = mean_squared_error(y_test, y_pred)
+print(f"Mean Squared Error: {mse:.4f}")
+
+# Now you can use the trained model to make predictions on new data
+
+# Example new data for prediction
+new_data = pd.DataFrame({
+    'GDP_growth': [2.5],
+    'Inflation': [2.0],
+    'Yield_1Y': [1.8],
+    'Yield_5Y': [2.5],
+    'Yield_10Y': [3.0]
+})
+
+# Predict interest rate movement using the trained model
+predicted_interest_rate = model.predict(new_data)
+print(f"Predicted Interest Rate: {predicted_interest_rate[0]:.4f}")
