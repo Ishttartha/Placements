@@ -1,0 +1,65 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import mean_squared_error
+
+# Load historical stock price data (replace this with your data source)
+# Assume the data is loaded into a DataFrame called 'stock_data' with columns 'Date' and 'Close'
+
+# Convert 'Date' column to datetime format
+stock_data['Date'] = pd.to_datetime(stock_data['Date'])
+
+# Calculate daily returns and add as a new column
+stock_data['Daily_Return'] = stock_data['Close'].pct_change()
+
+# Drop missing values and reset index
+stock_data.dropna(inplace=True)
+stock_data.reset_index(drop=True, inplace=True)
+
+# Feature engineering: Use lagged returns as predictor variable
+num_lags = 5  # Number of lagged returns to consider
+for i in range(1, num_lags + 1):
+    stock_data[f'Lag_{i}'] = stock_data['Daily_Return'].shift(i)
+
+# Drop rows with missing values
+stock_data.dropna(inplace=True)
+
+# Split the data into features (X) and target (y)
+X = stock_data.drop(['Date', 'Close', 'Daily_Return'], axis=1)
+y = stock_data['Close']
+
+# Normalize the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split the data into training and testing sets
+split_ratio = 0.8
+split_index = int(split_ratio * len(X_scaled))
+
+X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
+y_train, y_test = y[:split_index], y[split_index:]
+
+# Initialize and train a KNN regressor
+k = 5  # Number of neighbors
+model = KNeighborsRegressor(n_neighbors=k)
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Calculate Mean Squared Error for evaluation
+mse = mean_squared_error(y_test, y_pred)
+print(f"Mean Squared Error: {mse:.2f}")
+
+# Visualize predicted vs. actual stock prices
+plt.figure(figsize=(10, 6))
+plt.plot(y_test.index, y_test, label='Actual')
+plt.plot(y_test.index, y_pred, label='Predicted')
+plt.xlabel('Time')
+plt.ylabel('Stock Price')
+plt.title('Stock Price Prediction using KNN')
+plt.legend()
+plt.grid(True)
+plt.show()
